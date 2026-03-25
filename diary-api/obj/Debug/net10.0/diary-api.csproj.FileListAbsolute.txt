@@ -315,3 +315,4 @@ C:\Users\Iqbal\Downloads\WorkSpace\.netDiary\bin\Debug\net10.0-v2\diary-api.deps
 C:\Users\Iqbal\Downloads\WorkSpace\.netDiary\bin\Debug\net10.0-v2\diary-api.runtimeconfig.json
 C:\Users\Iqbal\Downloads\WorkSpace\.netDiary\bin\Debug\net10.0-v2\diary-api.dll
 C:\Users\Iqbal\Downloads\WorkSpace\.netDiary\bin\Debug\net10.0-v2\diary-api.pdb
+C:\Users\Iqbal\Downloads\WorkSpace\.netDiary\diary-api\obj\Debug\net10.0\diary-api.sourcelink.json
