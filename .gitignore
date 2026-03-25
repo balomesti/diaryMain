@@ -18,3 +18,9 @@ Thumbs.db
 
 # JetBrains Rider
 .idea/
+
+# SQLite runtime files (local database)
+diary.db
+*.db
+*.db-shm
+*.db-wal
