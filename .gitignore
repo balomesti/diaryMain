@@ -1,0 +1,20 @@
+# Visual Studio and .NET artifacts
+bin/
+obj/
+*.user
+*.suo
+*.vs/
+*.vscode/
+
+# ASP.NET runtime and user uploads
+wwwroot/uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# JetBrains Rider
+.idea/
