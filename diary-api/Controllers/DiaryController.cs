@@ -37,6 +37,10 @@ public class DiaryController : ControllerBase
                 Title = entryDto.Title,
                 Content = entryDto.Content,
                 Date = entryDto.Date,
+                Location = entryDto.Location,
+                Weather = entryDto.Weather,
+                Mood = entryDto.Mood,
+                Tags = entryDto.Tags,
                 UserId = int.Parse(userId)
             };
 
@@ -154,6 +158,10 @@ public class DiaryController : ControllerBase
             entry.Title = entryDto.Title;
             entry.Content = entryDto.Content;
             entry.Date = entryDto.Date;
+            entry.Location = entryDto.Location;
+            entry.Weather = entryDto.Weather;
+            entry.Mood = entryDto.Mood;
+            entry.Tags = entryDto.Tags;
 
             if (entryDto.Images != null && entryDto.Images.Count > 0)
             {
@@ -210,5 +218,9 @@ public class DiaryEntryDto
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public DateTime Date { get; set; }
+    public string Location { get; set; } = string.Empty;
+    public string Weather { get; set; } = string.Empty;
+    public string Mood { get; set; } = string.Empty;
+    public string Tags { get; set; } = string.Empty;
     public List<IFormFile>? Images { get; set; }
 }
