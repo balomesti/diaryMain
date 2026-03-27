@@ -11,6 +11,8 @@ public class User
     public string Email { get; set; } = string.Empty;
     [Required]
     public string PasswordHash { get; set; } = string.Empty;
+    public string? ProfileImg { get; set; }
+    public string? UserBio { get; set; }
 }
 
 public class DiaryEntry

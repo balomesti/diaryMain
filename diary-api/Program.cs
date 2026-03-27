@@ -122,6 +122,10 @@ using (var scope = app.Services.CreateScope())
         try { db.Database.ExecuteSqlRaw("ALTER TABLE DiaryEntries ADD COLUMN ImageUrls TEXT;"); } catch { }
         try { db.Database.ExecuteSqlRaw("UPDATE DiaryEntries SET ImageUrls = ImageUrl WHERE ImageUrls IS NULL OR ImageUrls = '';"); } catch { }
 
+        // Fix for User profile columns
+        try { db.Database.ExecuteSqlRaw("ALTER TABLE Users ADD COLUMN ProfileImg TEXT;"); } catch { }
+        try { db.Database.ExecuteSqlRaw("ALTER TABLE Users ADD COLUMN UserBio TEXT;"); } catch { }
+
         db.Database.ExecuteSqlRaw(@"
             CREATE TABLE IF NOT EXISTS KeyHighlights (
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
