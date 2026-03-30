@@ -211,6 +211,88 @@ public class DiaryController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
+
+    [HttpGet("streak")]
+    public async Task<IActionResult> GetStreak()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) return Unauthorized();
+
+        var entries = await _context.DiaryEntries
+            .Where(e => e.UserId == int.Parse(userId))
+            .OrderByDescending(e => e.Date)
+            .ToListAsync();
+
+        if (entries == null || !entries.Any())
+        {
+            return Ok(new StreakInfo
+            {
+                CurrentStreak = 0,
+                LongestStreak = 0,
+                LastEntryDate = null,
+                HasEntryToday = false
+            });
+        }
+
+        var distinctDates = entries
+            .Select(e => e.Date.Date)
+            .Distinct()
+            .OrderByDescending(d => d)
+            .ToList();
+
+        var today = DateTime.Today;
+        var hasEntryToday = distinctDates.Any(d => d == today);
+        var lastEntryDate = distinctDates.FirstOrDefault();
+
+        int currentStreak = 0;
+        int longestStreak = 0;
+        int tempStreak = 0;
+        DateTime? previousDate = null;
+
+        foreach (var date in distinctDates.OrderBy(d => d))
+        {
+            if (previousDate == null)
+            {
+                tempStreak = 1;
+            }
+            else if ((date - previousDate.Value).Days == 1)
+            {
+                tempStreak++;
+            }
+            else
+            {
+                if (tempStreak > longestStreak) longestStreak = tempStreak;
+                tempStreak = 1;
+            }
+            previousDate = date;
+        }
+        if (tempStreak > longestStreak) longestStreak = tempStreak;
+
+        var orderedDates = distinctDates.OrderByDescending(d => d).ToList();
+        if (orderedDates.Any() && (orderedDates[0] == today || (today - orderedDates[0]).Days == 1))
+        {
+            currentStreak = 1;
+            for (int i = 1; i < orderedDates.Count; i++)
+            {
+                if ((orderedDates[i - 1] - orderedDates[i]).Days == 1)
+                {
+                    currentStreak++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        return Ok(new StreakInfo
+        {
+            CurrentStreak = currentStreak,
+            LongestStreak = longestStreak,
+            LastEntryDate = lastEntryDate,
+            HasEntryToday = hasEntryToday
+        });
+    }
 }
 
 public class DiaryEntryDto
