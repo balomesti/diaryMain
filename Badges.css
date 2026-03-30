@@ -1,0 +1,262 @@
+/* ════════════════════════════════════════
+   Badges — all 6 unique animations
+   ════════════════════════════════════════ */
+
+/* ── Grid ── */
+.badges-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding: 20px 0;
+}
+
+@media (max-width: 480px) {
+    .badges-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ── Card ── */
+.badge-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 12px 16px;
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #E4D9CE);
+    border-radius: 16px;
+}
+
+.badge-card.locked {
+    opacity: 0.45;
+    filter: grayscale(1);
+}
+
+/* ── Badge wrap (holds extra elements like rings, gleams) ── */
+.badge-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+}
+
+/* ── Badge icon circle ── */
+.badge-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    position: relative;
+    overflow: visible;
+    background: linear-gradient(135deg, #F5A623, #F8D06B);
+    color: #7A4A00;
+    border: 2px solid #E8960A;
+}
+
+.badge-card.locked .badge-icon {
+    background: #E8E4DE;
+    color: #B0A598;
+    border-color: #D4CEC8;
+}
+
+/* ── Titles ── */
+.badge-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-main, #2C1F16);
+    text-align: center;
+}
+
+.badge-locked-label {
+    font-size: 0.72rem;
+    color: var(--text-light, #8C7B6E);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+
+/* ════════════════════════════════════════
+   1. FIRST ENTRY — Seedling grow pulse
+   ════════════════════════════════════════ */
+.anim-grow {
+    animation: grow-pulse 2.2s ease-in-out infinite;
+    transform-origin: bottom center;
+}
+
+@keyframes grow-pulse {
+    0%,  100% { transform: scaleY(1)    scaleX(1);    filter: brightness(1); }
+    40%        { transform: scaleY(1.1)  scaleX(0.95); filter: brightness(1.15); }
+    70%        { transform: scaleY(0.95) scaleX(1.03); filter: brightness(0.95); }
+}
+
+
+/* ════════════════════════════════════════
+   2. 7 DAYS — Calendar tick bounce
+   ════════════════════════════════════════ */
+.anim-tick {
+    animation: tick-bounce 1.8s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+}
+
+@keyframes tick-bounce {
+    0%,  100% { transform: scale(1)    rotate(0deg); }
+    15%        { transform: scale(1.15) rotate(-8deg); }
+    30%        { transform: scale(1.1)  rotate(6deg); }
+    45%        { transform: scale(1.05) rotate(-3deg); }
+    55%        { transform: scale(1)    rotate(0deg); }
+}
+
+
+/* ════════════════════════════════════════
+   3. PHOTO BUFF — Camera shutter flash
+   ════════════════════════════════════════ */
+.anim-shutter {
+    animation: shutter-click 2.5s ease-in-out infinite;
+}
+
+@keyframes shutter-click {
+    0%,  100% { transform: scale(1); }
+    20%        { transform: scale(0.9); }
+    25%        { transform: scale(1.08); }
+    35%        { transform: scale(1); }
+}
+
+/* White flash overlay — place <div class="shutter-flash"> inside .badge-icon */
+.shutter-flash {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.85);
+    pointer-events: none;
+    animation: flash-out 2.5s ease-in-out infinite;
+}
+
+@keyframes flash-out {
+    0%,  15%, 100% { opacity: 0; }
+    22%             { opacity: 0.75; }
+    30%             { opacity: 0; }
+}
+
+
+/* ════════════════════════════════════════
+   4. 10 ENTRIES — Award spinning gleam
+   ════════════════════════════════════════ */
+.anim-spin {
+    animation: spin-once 3s ease-in-out infinite;
+}
+
+@keyframes spin-once {
+    0%,  65%, 100% { transform: rotate(0deg)   scale(1);    filter: brightness(1); }
+    10%             { transform: rotate(20deg)  scale(1.08); }
+    20%             { transform: rotate(-10deg) scale(1.05); }
+    30%             { transform: rotate(360deg) scale(1.12); filter: brightness(1.3); }
+    42%             { transform: rotate(355deg) scale(1);    filter: brightness(1); }
+}
+
+/* Gleam rays — place these 3 divs BEFORE .badge-icon inside .badge-wrap */
+.gleam {
+    position: absolute;
+    width: 2px;
+    border-radius: 2px;
+    background: rgba(255, 220, 80, 0.95);
+    pointer-events: none;
+    transform-origin: center bottom;
+}
+
+.gleam-t  { height: 11px; top: -15px; left: calc(50% - 1px); animation: gleam-flash 3s ease-in-out infinite 0s; }
+.gleam-tr { height: 8px;  top: 0;     right: -14px; transform: rotate(60deg);  animation: gleam-flash 3s ease-in-out infinite 0.05s; }
+.gleam-tl { height: 8px;  top: 0;     left:  -14px; transform: rotate(-60deg); animation: gleam-flash 3s ease-in-out infinite 0.10s; }
+
+@keyframes gleam-flash {
+    0%,  25%, 55%, 100% { opacity: 0; transform: scaleY(0) rotate(var(--r, 0deg)); }
+    30%, 45%             { opacity: 1; transform: scaleY(1) rotate(var(--r, 0deg)); }
+}
+
+.gleam-t  { --r: 0deg; }
+.gleam-tr { --r: 60deg; }
+.gleam-tl { --r: -60deg; }
+
+
+/* ════════════════════════════════════════
+   5. 20 ENTRIES — Pen writing animation
+   ════════════════════════════════════════ */
+
+/* The icon itself moves like a pen on paper */
+.anim-pen i {
+    display: inline-block;
+    animation: pen-write 1.5s ease-in-out infinite;
+    transform-origin: 80% 80%;
+}
+
+@keyframes pen-write {
+    0%         { transform: rotate(-20deg) translate(-4px,  2px); }
+    20%        { transform: rotate(-18deg) translate( 2px,  1px); }
+    40%        { transform: rotate(-22deg) translate( 5px,  2px); }
+    60%        { transform: rotate(-18deg) translate(-1px,  1px); }
+    80%        { transform: rotate(-21deg) translate(-5px,  2px); }
+    100%       { transform: rotate(-20deg) translate(-4px,  2px); }
+}
+
+/* Ink dots — place <div class="ink"> inside .badge-icon for the pen badge */
+.ink {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    pointer-events: none;
+}
+
+.ink-dot {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #7A4A00;
+    opacity: 0;
+    animation: ink-appear 1.5s ease-in-out infinite;
+}
+
+.ink-dot:nth-child(1) { left: -8px;  animation-delay: 0.0s; }
+.ink-dot:nth-child(2) { left: -2px;  animation-delay: 0.3s; }
+.ink-dot:nth-child(3) { left:  4px;  animation-delay: 0.6s; }
+.ink-dot:nth-child(4) { left: 10px;  animation-delay: 0.9s; }
+.ink-dot:nth-child(5) { left: 16px;  animation-delay: 1.2s; }
+
+@keyframes ink-appear {
+    0%   { opacity: 0;   transform: scale(0); }
+    15%  { opacity: 0.7; transform: scale(1); }
+    60%  { opacity: 0.5; }
+    100% { opacity: 0;   transform: scale(0.5); }
+}
+
+
+/* ════════════════════════════════════════
+   6. 35 ENTRIES — Star float + ring burst
+   ════════════════════════════════════════ */
+.anim-star {
+    animation: star-float 2s ease-in-out infinite;
+}
+
+@keyframes star-float {
+    0%,  100% { transform: translateY(0)    scale(1);    filter: brightness(1); }
+    50%        { transform: translateY(-6px) scale(1.08); filter: brightness(1.25); }
+}
+
+/* Expanding ring — place <div class="ring"> BEFORE .badge-icon inside .badge-wrap */
+.ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid #F5A623;
+    pointer-events: none;
+    animation: ring-pulse 2s ease-out infinite;
+}
+
+@keyframes ring-pulse {
+    0%   { transform: scale(1);    opacity: 0.7; }
+    100% { transform: scale(1.55); opacity: 0; }
+}
