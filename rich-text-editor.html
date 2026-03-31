@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diary Comment Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #f7f4ee;
+    --cream-dark: #ede9df;
+    --cream-darker: #e0dbd0;
+    --ink: #2c2824;
+    --ink-mid: #5a534a;
+    --ink-light: #8c8278;
+    --ink-faint: #b5ae9f;
+    --accent: #6d8b74;
+    --accent-light: #e8f0e9;
+    --border: #d4cfc4;
+    --border-light: #e8e4da;
+    --gold: #c9a84c;
+    --gold-light: #f5edd8;
+  }
+
+  body {
+    background: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .page-wrap {
+    width: 100%;
+    max-width: 740px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .section-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+  }
+
+  .section-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--border-light);
+  }
+
+  .editor-shell {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fdfcf9;
+    box-shadow: 0 1px 3px rgba(44,40,36,0.06), 0 4px 16px rgba(44,40,36,0.04);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .editor-shell:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 1px 3px rgba(44,40,36,0.06), 0 0 0 3px rgba(109,139,116,0.12);
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 7px 12px;
+    background: var(--cream-dark);
+    border-bottom: 1px solid var(--border-light);
+    flex-wrap: wrap;
+  }
+
+  .tb-group { display: flex; align-items: center; gap: 1px; }
+
+  .tb-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--border);
+    margin: 0 6px;
+    flex-shrink: 0;
+  }
+
+  .tb-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 30px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ink-mid);
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s, transform 0.08s;
+    position: relative;
+  }
+
+  .tb-btn:hover { background: var(--cream-darker); color: var(--ink); }
+  .tb-btn:active { transform: scale(0.93); }
+  .tb-btn.active { background: var(--ink); color: var(--cream); }
+  .tb-btn svg { pointer-events: none; }
+
+  .tb-btn::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--cream);
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    padding: 3px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    z-index: 10;
+  }
+  .tb-btn:hover::after { opacity: 1; }
+
+  .tb-select {
+    height: 30px;
+    padding: 0 22px 0 8px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fdfcf9 url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238c8278' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 7px center;
+    color: var(--ink-mid);
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color 0.15s;
+  }
+  .tb-select:hover, .tb-select:focus { border-color: var(--accent); }
+
+  .tb-ai {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 13px;
+    height: 30px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid rgba(109,139,116,0.25);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.08s;
+    white-space: nowrap;
+  }
+  .tb-ai:hover { background: #d6e8d9; border-color: rgba(109,139,116,0.4); }
+  .tb-ai:active { transform: scale(0.97); }
+
+  .editor-body {
+    min-height: 170px;
+    padding: 16px 18px 12px;
+    background: #fdfcf9;
+  }
+
+  .editor-content {
+    outline: none;
+    font-family: 'Lora', Georgia, serif;
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--ink);
+    min-height: 130px;
+    caret-color: var(--accent);
+  }
+
+  .editor-content:empty::before {
+    content: attr(data-placeholder);
+    color: var(--ink-faint);
+    font-style: italic;
+    pointer-events: none;
+  }
+
+  .editor-content p { margin-bottom: 0.5em; }
+  .editor-content h1 { font-size: 1.4em; font-weight: 600; margin-bottom: 0.35em; }
+  .editor-content h2 { font-size: 1.2em; font-weight: 600; margin-bottom: 0.3em; }
+  .editor-content h3 { font-size: 1.05em; font-weight: 600; margin-bottom: 0.25em; }
+  .editor-content ul, .editor-content ol { padding-left: 1.5em; margin-bottom: 0.5em; }
+  .editor-content li { margin-bottom: 0.2em; }
+  .editor-content blockquote {
+    border-left: 3px solid var(--gold);
+    padding: 6px 0 6px 14px;
+    margin: 0.6em 0;
+    color: var(--ink-mid);
+    font-style: italic;
+    background: var(--gold-light);
+    border-radius: 0 5px 5px 0;
+  }
+
+  .format-bar {
+    display: flex;
+    gap: 4px;
+    padding: 0 18px;
+    background: var(--cream-dark);
+    flex-wrap: wrap;
+    min-height: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s, padding-bottom 0.2s;
+  }
+  .format-bar.has-formats {
+    max-height: 40px;
+    padding-bottom: 8px;
+  }
+
+  .fmt-tag {
+    font-size: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--ink);
+    color: var(--cream);
+    letter-spacing: 0.03em;
+  }
+
+  .editor-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 18px 10px;
+    background: var(--cream-dark);
+    border-top: 1px solid var(--border-light);
+  }
+
+  .meta-left { display: flex; align-items: center; gap: 10px; }
+
+  .meta-pill {
+    font-size: 11.5px;
+    color: var(--ink-light);
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .meta-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--ink-faint);
+  }
+
+  .char-count {
+    font-size: 11.5px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+    transition: color 0.2s;
+  }
+  .char-count.warn { color: #c0782a; }
+  .char-count.over { color: #b83232; font-weight: 500; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <div class="section-header">
+    <span class="section-label">Comment</span>
+    <div class="section-rule"></div>
+  </div>
+
+  <div class="editor-shell" id="editorShell">
+    <div class="toolbar">
+      <div class="tb-group">
+        <button class="tb-btn" id="btn-bold" data-tip="Bold" onclick="execCmd('bold',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h8a4 4 0 0 1 0 8H6z"/><path d="M6 12h9a4 4 0 0 1 0 8H6z"/></svg>
+        </button>
+        <button class="tb-btn" id="btn-italic" data-tip="Italic" onclick="execCmd('italic',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>
+        </button>
+        <button class="tb-btn" id="btn-underline" data-tip="Underline" onclick="execCmd('underline',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" y1="20" x2="20" y2="20"/></svg>
+        </button>
+        <button class="tb-btn" id="btn-strike" data-tip="Strikethrough" onclick="execCmd('strikeThrough',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><path d="M16 6C16 6 14.5 4 12 4C9.5 4 7 5.5 7 8C7 10 9 11.5 12 12"/><path d="M8 18C8 18 9.5 20 12 20C14.5 20 17 18.5 17 16C17 14 15 12.5 12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="tb-sep"></div>
+
+      <div class="tb-group">
+        <button class="tb-btn" id="btn-ul" data-tip="Bullet list" onclick="execCmd('insertUnorderedList',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <button class="tb-btn" id="btn-ol" data-tip="Numbered list" onclick="execCmd('insertOrderedList',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4M4 10H6" fill="none"/><path d="M6 18H4l2-2a1.5 1.5 0 0 0-2.5-1.5" fill="none"/></svg>
+        </button>
+        <button class="tb-btn" id="btn-bq" data-tip="Blockquote" onclick="toggleBlockquote(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+        </button>
+      </div>
+
+      <div class="tb-sep"></div>
+
+      <select class="tb-select" id="headingSelect" onchange="applyHeading(this.value)">
+        <option value="">Normal</option>
+        <option value="h1">Heading 1</option>
+        <option value="h2">Heading 2</option>
+        <option value="h3">Heading 3</option>
+      </select>
+
+      <div class="tb-sep"></div>
+
+      <button class="tb-btn" data-tip="Clear formatting" onclick="clearFormat()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg>
+      </button>
+
+      <button class="tb-ai" id="aiBtn" onclick="aiAssist()">
+        <span>✦</span> AI assist
+      </button>
+    </div>
+
+    <div class="editor-body">
+      <div
+        class="editor-content"
+        id="editorContent"
+        contenteditable="true"
+        data-placeholder="Write your thoughts..."
+        oninput="onInput()"
+        onkeyup="syncToolbar()"
+        onmouseup="syncToolbar()"
+      ></div>
+    </div>
+
+    <div class="format-bar" id="formatBar"></div>
+
+    <div class="editor-footer">
+      <div class="meta-left">
+        <span class="meta-pill" id="wordEl">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/></svg>
+          0 words
+        </span>
+        <div class="meta-dot"></div>
+        <span class="meta-pill" id="readEl">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          &lt;1 min read
+        </span>
+      </div>
+      <span class="char-count" id="charEl">0 / 2000</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  const MAX = 2000;
+  const editor = document.getElementById('editorContent');
+  const wordEl = document.getElementById('wordEl');
+  const readEl = document.getElementById('readEl');
+  const charEl = document.getElementById('charEl');
+  const formatBar = document.getElementById('formatBar');
+
+  function onInput() { updateStats(); syncToolbar(); }
+
+  function updateStats() {
+    const text = editor.innerText.trim();
+    const chars = editor.innerText.length;
+    const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+    const mins = Math.max(1, Math.ceil(words / 200));
+
+    wordEl.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/></svg> ${words} ${words===1?'word':'words'}`;
+    readEl.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ~${mins} min read`;
+    charEl.textContent = `${chars} / ${MAX}`;
+    charEl.className = 'char-count' + (chars > MAX ? ' over' : chars > MAX * 0.9 ? ' warn' : '');
+  }
+
+  function execCmd(cmd, btn) {
+    editor.focus();
+    document.execCommand(cmd, false, null);
+    syncToolbar();
+  }
+
+  function toggleBlockquote(btn) {
+    editor.focus();
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const node = sel.getRangeAt(0).commonAncestorContainer;
+    const el = node.nodeType === 1 ? node : node.parentElement;
+    const bq = el.closest('blockquote');
+    if (bq) {
+      const p = document.createElement('p');
+      p.innerHTML = bq.innerHTML;
+      bq.parentNode.replaceChild(p, bq);
+    } else {
+      document.execCommand('formatBlock', false, 'blockquote');
+    }
+    syncToolbar();
+  }
+
+  function applyHeading(tag) {
+    editor.focus();
+    document.execCommand('formatBlock', false, tag || 'p');
+    syncToolbar();
+  }
+
+  function clearFormat() {
+    editor.focus();
+    document.execCommand('removeFormat', false, null);
+    document.execCommand('formatBlock', false, 'p');
+    document.getElementById('headingSelect').value = '';
+    syncToolbar();
+  }
+
+  function syncToolbar() {
+    const cmdMap = {
+      'btn-bold': 'bold',
+      'btn-italic': 'italic',
+      'btn-underline': 'underline',
+      'btn-strike': 'strikeThrough',
+      'btn-ul': 'insertUnorderedList',
+      'btn-ol': 'insertOrderedList',
+    };
+    const labelMap = {
+      'btn-bold': 'Bold', 'btn-italic': 'Italic', 'btn-underline': 'Underline',
+      'btn-strike': 'Strike', 'btn-ul': 'List', 'btn-ol': 'Numbered',
+    };
+    const activeFmts = [];
+
+    Object.entries(cmdMap).forEach(([id, cmd]) => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      const on = document.queryCommandState(cmd);
+      btn.classList.toggle('active', on);
+      if (on) activeFmts.push(labelMap[id]);
+    });
+
+    const sel = window.getSelection();
+    const bqBtn = document.getElementById('btn-bq');
+    const hs = document.getElementById('headingSelect');
+    if (sel && sel.rangeCount) {
+      const node = sel.getRangeAt(0).commonAncestorContainer;
+      const el = node.nodeType === 1 ? node : node.parentElement;
+      const inBq = !!el.closest('blockquote');
+      bqBtn.classList.toggle('active', inBq);
+      if (inBq) activeFmts.push('Quote');
+      const heading = el.closest('h1,h2,h3');
+      hs.value = heading ? heading.tagName.toLowerCase() : '';
+      if (heading) activeFmts.push(heading.tagName);
+    }
+
+    formatBar.innerHTML = activeFmts.map(f => `<span class="fmt-tag">${f}</span>`).join('');
+    formatBar.classList.toggle('has-formats', activeFmts.length > 0);
+  }
+
+  let aiLoading = false;
+  function aiAssist() {
+    if (aiLoading) return;
+    const text = editor.innerText.trim();
+    const aiBtn = document.getElementById('aiBtn');
+    const orig = aiBtn.innerHTML;
+    aiLoading = true;
+    aiBtn.innerHTML = '<span style="display:inline-block;animation:spin 0.8s linear infinite">⟳</span> Thinking...';
+    aiBtn.style.opacity = '0.7';
+
+    setTimeout(() => {
+      const picks = [
+        ' It reminded me of simpler times, before the weight of the world had settled in.',
+        ' Perhaps that\'s what growth feels like — uncomfortable, but quietly necessary.',
+        ' I want to hold onto this feeling a little longer before it fades.',
+        ' These small, ordinary moments are the ones I\'ll want to return to someday.',
+      ];
+      const suggestion = picks[Math.floor(Math.random() * picks.length)];
+      editor.focus();
+      const sel = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(editor);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.execCommand('insertText', false, suggestion);
+      updateStats();
+      aiBtn.innerHTML = orig;
+      aiBtn.style.opacity = '';
+      aiLoading = false;
+    }, 1000);
+  }
+
+  editor.addEventListener('paste', e => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, text);
+  });
+
+  updateStats();
+</script>
+</body>
+</html>
