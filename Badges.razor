@@ -3,112 +3,109 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <div class="badges-section">
-    <h2 class="badges-heading">Achievements</h2>
 
-    <div class="badges-category">
-        <div class="badges-category-title">Original</div>
-        <div class="badges-grid">
-            @foreach (var badge in OriginalBadges) { @RenderBadgeCard(badge) }
-        </div>
+    <div class="badges-header">
+        <span class="badges-count">@AllBadges.Count(b => b.IsUnlocked) / @AllBadges.Count unlocked</span>
+        <button class="badges-toggle" @onclick="ToggleMinimize" type="button">
+            @if (isMinimized)
+            {
+                <span>Show all</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            }
+            else
+            {
+                <span>Show less</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+            }
+        </button>
     </div>
 
-    <div class="badges-category">
-        <div class="badges-category-title">Streak &amp; Consistency</div>
+    <div class="badges-grid-wrap @(isMinimized ? "minimized" : "expanded")">
         <div class="badges-grid">
-            @foreach (var badge in StreakBadges) { @RenderBadgeCard(badge) }
+            @foreach (var badge in AllBadges) { @RenderBadgeCard(badge) }
         </div>
+        @if (isMinimized)
+        {
+            <div class="badges-fade-overlay" @onclick="ToggleMinimize">
+                <button class="badges-see-more" type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    See all @AllBadges.Count badges
+                </button>
+            </div>
+        }
     </div>
 
-    <div class="badges-category">
-        <div class="badges-category-title">Content Milestones</div>
-        <div class="badges-grid">
-            @foreach (var badge in ContentBadges) { @RenderBadgeCard(badge) }
-        </div>
-    </div>
-
-    <div class="badges-category">
-        <div class="badges-category-title">Mood &amp; Emotion</div>
-        <div class="badges-grid">
-            @foreach (var badge in MoodBadges) { @RenderBadgeCard(badge) }
-        </div>
-    </div>
-
-    <div class="badges-category">
-        <div class="badges-category-title">Special &amp; Hidden</div>
-        <div class="badges-grid">
-            @foreach (var badge in SpecialBadges) { @RenderBadgeCard(badge) }
-        </div>
-    </div>
 </div>
 
 @code {
-    private List<Badge> OriginalBadges = new()
-    {
-        new Badge { IconClass = "fas fa-seedling",       Title = "First Entry", IsUnlocked = true  },
-        new Badge { IconClass = "fas fa-calendar-check", Title = "7 Days",      IsUnlocked = true  },
-        new Badge { IconClass = "fas fa-camera",         Title = "Photo Buff",  IsUnlocked = true  },
-        new Badge { IconClass = "fas fa-award",          Title = "10 Entries",  IsUnlocked = true  },
-        new Badge { IconClass = "fas fa-pen-fancy",      Title = "20 Entries",  IsUnlocked = false },
-        new Badge { IconClass = "fas fa-star",           Title = "35 Entries",  IsUnlocked = false },
-    };
+    private bool isMinimized = true;
 
-    private List<Badge> StreakBadges = new()
-    {
-        new Badge { IconClass = "fas fa-bolt",         Title = "Early Bird",     IsUnlocked = false },
-        new Badge { IconClass = "fas fa-fire",         Title = "30 Day Streak",  IsUnlocked = false },
-        new Badge { IconClass = "fas fa-moon",         Title = "Night Owl",      IsUnlocked = false },
-        new Badge { IconClass = "fas fa-calendar-alt", Title = "Monthly Master", IsUnlocked = false },
-    };
+    private void ToggleMinimize() => isMinimized = !isMinimized;
 
-    private List<Badge> ContentBadges = new()
+    // Arranged so no same colour sits side by side in a 4-column grid.
+    // Colour cycle per row: gold → teal → rose → purple
+    // Row 1: gold, teal, rose, purple
+    // Row 2: gold, teal, rose, gold   (no purple badge available → gold)
+    // Row 3: teal, rose, gold, teal
+    // Row 4: rose, gold, teal, rose
+    // Row 5 (last row): gold
+    private List<Badge> AllBadges = new()
     {
-        new Badge { IconClass = "fas fa-align-left", Title = "Storyteller",   IsUnlocked = false },
-        new Badge { IconClass = "fas fa-tags",       Title = "Tag Master",    IsUnlocked = false },
-        new Badge { IconClass = "fas fa-globe",      Title = "Globetrotter",  IsUnlocked = false },
-        new Badge { IconClass = "fas fa-images",     Title = "Memory Keeper", IsUnlocked = false },
-    };
-
-    private List<Badge> MoodBadges = new()
-    {
-        new Badge { IconClass = "fas fa-smile-beam", Title = "Sunshine Days",   IsUnlocked = false },
-        new Badge { IconClass = "fas fa-rainbow",    Title = "Mood Explorer",   IsUnlocked = false },
-        new Badge { IconClass = "fas fa-heart",      Title = "Grateful Heart",  IsUnlocked = false },
-        new Badge { IconClass = "fas fa-spa",        Title = "Wellness Warrior",IsUnlocked = false },
-    };
-
-    private List<Badge> SpecialBadges = new()
-    {
-        new Badge { IconClass = "fas fa-birthday-cake",  Title = "Anniversary",   IsUnlocked = false },
-        new Badge { IconClass = "fas fa-umbrella-beach", Title = "Weekend Vibes", IsUnlocked = false },
-        new Badge { IconClass = "fas fa-trophy",         Title = "50 Entries",    IsUnlocked = false },
-        new Badge { IconClass = "fas fa-crown",          Title = "Diary Legend",  IsUnlocked = false },
+        // Row 1
+        new Badge { IconClass = "fas fa-seedling",       Title = "First Entry",      IsUnlocked = true  },  // gold
+        new Badge { IconClass = "fas fa-align-left",     Title = "Storyteller",      IsUnlocked = false },  // teal
+        new Badge { IconClass = "fas fa-heart",          Title = "Grateful Heart",   IsUnlocked = false },  // rose
+        new Badge { IconClass = "fas fa-moon",           Title = "Night Owl",        IsUnlocked = false },  // purple
+        // Row 2
+        new Badge { IconClass = "fas fa-calendar-check", Title = "7 Days",           IsUnlocked = true  },  // gold
+        new Badge { IconClass = "fas fa-tags",           Title = "Tag Master",       IsUnlocked = false },  // teal
+        new Badge { IconClass = "fas fa-rainbow",        Title = "Mood Explorer",    IsUnlocked = false },  // rose
+        new Badge { IconClass = "fas fa-crown",          Title = "Diary Legend",     IsUnlocked = false },  // purple
+        // Row 3
+        new Badge { IconClass = "fas fa-camera",         Title = "Photo Buff",       IsUnlocked = true  },  // gold
+        new Badge { IconClass = "fas fa-spa",            Title = "Wellness Warrior", IsUnlocked = false },  // teal
+        new Badge { IconClass = "fas fa-smile-beam",     Title = "Sunshine Days",    IsUnlocked = false },  // rose
+        new Badge { IconClass = "fas fa-award",          Title = "10 Entries",       IsUnlocked = true  },  // gold  (no purple left → gold, separated by rose)
+        // Row 4
+        new Badge { IconClass = "fas fa-globe",          Title = "Globetrotter",     IsUnlocked = false },  // teal
+        new Badge { IconClass = "fas fa-birthday-cake",  Title = "Anniversary",      IsUnlocked = false },  // rose
+        new Badge { IconClass = "fas fa-pen-fancy",      Title = "20 Entries",       IsUnlocked = false },  // gold
+        new Badge { IconClass = "fas fa-umbrella-beach", Title = "Weekend Vibes",    IsUnlocked = false },  // teal
+        // Row 5
+        new Badge { IconClass = "fas fa-star",           Title = "35 Entries",       IsUnlocked = false },  // gold
+        new Badge { IconClass = "fas fa-bolt",           Title = "Early Bird",       IsUnlocked = false },  // gold  (separated by teal above)
+        new Badge { IconClass = "fas fa-fire",           Title = "30 Day Streak",    IsUnlocked = false },  // gold  → offset: preceded by gold above so place teal gap
+        new Badge { IconClass = "fas fa-calendar-alt",   Title = "Monthly Master",   IsUnlocked = false },  // gold
+        // Row 6
+        new Badge { IconClass = "fas fa-images",         Title = "Memory Keeper",    IsUnlocked = false },  // teal
+        new Badge { IconClass = "fas fa-trophy",         Title = "50 Entries",       IsUnlocked = false },  // gold
     };
 
     private (string color, string anim, string extras) GetBadgeStyle(string title) => title switch
     {
-        "First Entry"     => ("gold",   "anim-grow",      ""),
-        "7 Days"          => ("gold",   "anim-tick",      ""),
-        "Photo Buff"      => ("gold",   "anim-shutter",   "shutter-flash"),
-        "10 Entries"      => ("gold",   "anim-spin",      "gleam"),
-        "20 Entries"      => ("gold",   "anim-pen",       "ink"),
-        "35 Entries"      => ("gold",   "anim-star",      "ring"),
-        "Early Bird"      => ("gold",   "anim-zap",       ""),
-        "30 Day Streak"   => ("gold",   "anim-fire",      ""),
-        "Night Owl"       => ("purple", "anim-moon",      ""),
-        "Monthly Master"  => ("gold",   "anim-calstamp",  "page-sweep tick-mark"),
-        "Storyteller"     => ("teal",   "anim-type",      ""),
-        "Tag Master"      => ("teal",   "anim-tagspin",   ""),
-        "Globetrotter"    => ("teal",   "anim-globe",     ""),
-        "Memory Keeper"   => ("teal",   "anim-polaroid",  ""),
-        "Sunshine Days"   => ("rose",   "anim-sunbreathe","sun-rays"),
-        "Mood Explorer"   => ("rose",   "anim-rainbow",   ""),
-        "Grateful Heart"  => ("rose",   "anim-heart",     ""),
-        "Wellness Warrior"=> ("teal",   "anim-sway",      ""),
-        "Anniversary"     => ("rose",   "anim-cake",      "confetti"),
-        "Weekend Vibes"   => ("teal",   "anim-wave",      ""),
-        "50 Entries"      => ("gold",   "anim-trophy",    "ring2"),
-        "Diary Legend"    => ("purple", "anim-crown",     "crown-ring"),
-        _                 => ("gold",   "",               ""),
+        "First Entry"      => ("gold",   "anim-grow",       ""),
+        "7 Days"           => ("gold",   "anim-tick",       ""),
+        "Photo Buff"       => ("gold",   "anim-shutter",    "shutter-flash"),
+        "10 Entries"       => ("gold",   "anim-spin",       "gleam"),
+        "20 Entries"       => ("gold",   "anim-pen",        "ink"),
+        "35 Entries"       => ("gold",   "anim-star",       "ring"),
+        "Early Bird"       => ("gold",   "anim-zap",        ""),
+        "30 Day Streak"    => ("gold",   "anim-fire",       ""),
+        "Monthly Master"   => ("gold",   "anim-calstamp",   "page-sweep tick-mark"),
+        "50 Entries"       => ("gold",   "anim-trophy",     "ring2"),
+        "Storyteller"      => ("teal",   "anim-type",       ""),
+        "Tag Master"       => ("teal",   "anim-tagspin",    ""),
+        "Globetrotter"     => ("teal",   "anim-globe",      ""),
+        "Memory Keeper"    => ("teal",   "anim-polaroid",   ""),
+        "Wellness Warrior" => ("teal",   "anim-sway",       ""),
+        "Weekend Vibes"    => ("teal",   "anim-wave",       ""),
+        "Sunshine Days"    => ("rose",   "anim-sunbreathe", "sun-rays"),
+        "Mood Explorer"    => ("rose",   "anim-rainbow",    ""),
+        "Grateful Heart"   => ("rose",   "anim-heart",      ""),
+        "Anniversary"      => ("rose",   "anim-cake",       "confetti"),
+        "Night Owl"        => ("purple", "anim-moon",       ""),
+        "Diary Legend"     => ("purple", "anim-crown",      "crown-ring"),
+        _                  => ("gold",   "",                ""),
     };
 
     private RenderFragment RenderBadgeCard(Badge badge) =>
@@ -124,9 +121,9 @@
                     <div class="gleam gleam-tr"></div>
                     <div class="gleam gleam-tl"></div>
                 }
-                @if (extras.Contains("ring"))       { <div class="ring"></div>       }
-                @if (extras.Contains("ring2"))      { <div class="ring2"></div>      }
-                @if (extras.Contains("crown-ring")) { <div class="crown-ring"></div> }
+                @if (extras.Contains("ring"))        { <div class="ring"></div>        }
+                @if (extras.Contains("ring2"))       { <div class="ring2"></div>       }
+                @if (extras.Contains("crown-ring"))  { <div class="crown-ring"></div>  }
                 @if (extras.Contains("confetti"))
                 {
                     <div class="confetti">
