@@ -1,0 +1,176 @@
+@using diary_app.Models
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="badges-section">
+    <h2 class="badges-heading">Achievements</h2>
+
+    <div class="badges-category">
+        <div class="badges-category-title">Original</div>
+        <div class="badges-grid">
+            @foreach (var badge in OriginalBadges) { @RenderBadgeCard(badge) }
+        </div>
+    </div>
+
+    <div class="badges-category">
+        <div class="badges-category-title">Streak &amp; Consistency</div>
+        <div class="badges-grid">
+            @foreach (var badge in StreakBadges) { @RenderBadgeCard(badge) }
+        </div>
+    </div>
+
+    <div class="badges-category">
+        <div class="badges-category-title">Content Milestones</div>
+        <div class="badges-grid">
+            @foreach (var badge in ContentBadges) { @RenderBadgeCard(badge) }
+        </div>
+    </div>
+
+    <div class="badges-category">
+        <div class="badges-category-title">Mood &amp; Emotion</div>
+        <div class="badges-grid">
+            @foreach (var badge in MoodBadges) { @RenderBadgeCard(badge) }
+        </div>
+    </div>
+
+    <div class="badges-category">
+        <div class="badges-category-title">Special &amp; Hidden</div>
+        <div class="badges-grid">
+            @foreach (var badge in SpecialBadges) { @RenderBadgeCard(badge) }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Badge> OriginalBadges = new()
+    {
+        new Badge { IconClass = "fas fa-seedling",       Title = "First Entry", IsUnlocked = true  },
+        new Badge { IconClass = "fas fa-calendar-check", Title = "7 Days",      IsUnlocked = true  },
+        new Badge { IconClass = "fas fa-camera",         Title = "Photo Buff",  IsUnlocked = true  },
+        new Badge { IconClass = "fas fa-award",          Title = "10 Entries",  IsUnlocked = true  },
+        new Badge { IconClass = "fas fa-pen-fancy",      Title = "20 Entries",  IsUnlocked = false },
+        new Badge { IconClass = "fas fa-star",           Title = "35 Entries",  IsUnlocked = false },
+    };
+
+    private List<Badge> StreakBadges = new()
+    {
+        new Badge { IconClass = "fas fa-bolt",         Title = "Early Bird",     IsUnlocked = false },
+        new Badge { IconClass = "fas fa-fire",         Title = "30 Day Streak",  IsUnlocked = false },
+        new Badge { IconClass = "fas fa-moon",         Title = "Night Owl",      IsUnlocked = false },
+        new Badge { IconClass = "fas fa-calendar-alt", Title = "Monthly Master", IsUnlocked = false },
+    };
+
+    private List<Badge> ContentBadges = new()
+    {
+        new Badge { IconClass = "fas fa-align-left", Title = "Storyteller",   IsUnlocked = false },
+        new Badge { IconClass = "fas fa-tags",       Title = "Tag Master",    IsUnlocked = false },
+        new Badge { IconClass = "fas fa-globe",      Title = "Globetrotter",  IsUnlocked = false },
+        new Badge { IconClass = "fas fa-images",     Title = "Memory Keeper", IsUnlocked = false },
+    };
+
+    private List<Badge> MoodBadges = new()
+    {
+        new Badge { IconClass = "fas fa-smile-beam", Title = "Sunshine Days",   IsUnlocked = false },
+        new Badge { IconClass = "fas fa-rainbow",    Title = "Mood Explorer",   IsUnlocked = false },
+        new Badge { IconClass = "fas fa-heart",      Title = "Grateful Heart",  IsUnlocked = false },
+        new Badge { IconClass = "fas fa-spa",        Title = "Wellness Warrior",IsUnlocked = false },
+    };
+
+    private List<Badge> SpecialBadges = new()
+    {
+        new Badge { IconClass = "fas fa-birthday-cake",  Title = "Anniversary",   IsUnlocked = false },
+        new Badge { IconClass = "fas fa-umbrella-beach", Title = "Weekend Vibes", IsUnlocked = false },
+        new Badge { IconClass = "fas fa-trophy",         Title = "50 Entries",    IsUnlocked = false },
+        new Badge { IconClass = "fas fa-crown",          Title = "Diary Legend",  IsUnlocked = false },
+    };
+
+    private (string color, string anim, string extras) GetBadgeStyle(string title) => title switch
+    {
+        "First Entry"     => ("gold",   "anim-grow",      ""),
+        "7 Days"          => ("gold",   "anim-tick",      ""),
+        "Photo Buff"      => ("gold",   "anim-shutter",   "shutter-flash"),
+        "10 Entries"      => ("gold",   "anim-spin",      "gleam"),
+        "20 Entries"      => ("gold",   "anim-pen",       "ink"),
+        "35 Entries"      => ("gold",   "anim-star",      "ring"),
+        "Early Bird"      => ("gold",   "anim-zap",       ""),
+        "30 Day Streak"   => ("gold",   "anim-fire",      ""),
+        "Night Owl"       => ("purple", "anim-moon",      ""),
+        "Monthly Master"  => ("gold",   "anim-calstamp",  "page-sweep tick-mark"),
+        "Storyteller"     => ("teal",   "anim-type",      ""),
+        "Tag Master"      => ("teal",   "anim-tagspin",   ""),
+        "Globetrotter"    => ("teal",   "anim-globe",     ""),
+        "Memory Keeper"   => ("teal",   "anim-polaroid",  ""),
+        "Sunshine Days"   => ("rose",   "anim-sunbreathe","sun-rays"),
+        "Mood Explorer"   => ("rose",   "anim-rainbow",   ""),
+        "Grateful Heart"  => ("rose",   "anim-heart",     ""),
+        "Wellness Warrior"=> ("teal",   "anim-sway",      ""),
+        "Anniversary"     => ("rose",   "anim-cake",      "confetti"),
+        "Weekend Vibes"   => ("teal",   "anim-wave",      ""),
+        "50 Entries"      => ("gold",   "anim-trophy",    "ring2"),
+        "Diary Legend"    => ("purple", "anim-crown",     "crown-ring"),
+        _                 => ("gold",   "",               ""),
+    };
+
+    private RenderFragment RenderBadgeCard(Badge badge) =>
+    @<div class="badge-card @(badge.IsUnlocked ? "unlocked" : "locked")">
+        <div class="badge-wrap">
+            @if (badge.IsUnlocked)
+            {
+                var (color, anim, extras) = GetBadgeStyle(badge.Title);
+
+                @if (extras.Contains("gleam"))
+                {
+                    <div class="gleam gleam-t"></div>
+                    <div class="gleam gleam-tr"></div>
+                    <div class="gleam gleam-tl"></div>
+                }
+                @if (extras.Contains("ring"))       { <div class="ring"></div>       }
+                @if (extras.Contains("ring2"))      { <div class="ring2"></div>      }
+                @if (extras.Contains("crown-ring")) { <div class="crown-ring"></div> }
+                @if (extras.Contains("confetti"))
+                {
+                    <div class="confetti">
+                        <div class="cc"></div><div class="cc"></div>
+                        <div class="cc"></div><div class="cc"></div>
+                    </div>
+                }
+                @if (extras.Contains("sun-rays"))
+                {
+                    <svg class="sun-rays-svg" viewBox="0 0 76 76" xmlns="http://www.w3.org/2000/svg">
+                        <line class="ray-line" x1="38" y1="4"  x2="38" y2="12"/>
+                        <line class="ray-line" x1="38" y1="64" x2="38" y2="72"/>
+                        <line class="ray-line" x1="4"  y1="38" x2="12" y2="38"/>
+                        <line class="ray-line" x1="64" y1="38" x2="72" y2="38"/>
+                        <line class="ray-line" x1="13" y1="13" x2="19" y2="19"/>
+                        <line class="ray-line" x1="57" y1="57" x2="63" y2="63"/>
+                        <line class="ray-line" x1="63" y1="13" x2="57" y2="19"/>
+                        <line class="ray-line" x1="19" y1="57" x2="13" y2="63"/>
+                    </svg>
+                }
+
+                <div class="badge-icon @color @anim">
+                    <i class="@badge.IconClass"></i>
+                    @if (extras.Contains("shutter-flash")) { <div class="shutter-flash"></div> }
+                    @if (extras.Contains("page-sweep"))    { <div class="page-sweep"></div>    }
+                    @if (extras.Contains("ink"))
+                    {
+                        <div class="ink">
+                            <div class="ink-dot"></div><div class="ink-dot"></div>
+                            <div class="ink-dot"></div><div class="ink-dot"></div>
+                            <div class="ink-dot"></div>
+                        </div>
+                    }
+                </div>
+                @if (extras.Contains("tick-mark")) { <div class="tick-mark">✓</div> }
+            }
+            else
+            {
+                <div class="badge-icon locked-icon">
+                    <i class="@badge.IconClass"></i>
+                </div>
+            }
+        </div>
+        <div class="badge-title">@badge.Title</div>
+        @if (!badge.IsUnlocked) { <div class="badge-locked-label">Locked</div> }
+    </div>;
+}
