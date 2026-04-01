@@ -36,7 +36,7 @@ public class DiaryController : ControllerBase
             {
                 Title = entryDto.Title,
                 Content = entryDto.Content,
-                Date = entryDto.Date,
+                Date = entryDto.Date == default ? DateTime.Now : entryDto.Date.Date.Add(DateTime.Now.TimeOfDay),
                 Location = entryDto.Location,
                 Weather = entryDto.Weather,
                 Mood = entryDto.Mood,
