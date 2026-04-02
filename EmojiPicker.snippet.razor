@@ -1,0 +1,110 @@
+@* ── Add this block inside your .toolbar div, after the tb-sep before the tb-ai button ── *@
+
+<div class="tb-sep"></div>
+
+<div class="emoji-picker-wrap" id="emojiWrap-@_id">
+    <button type="button" class="tb-emoji-btn @(_emojiOpen ? "open" : "")"
+            id="emojiToggle-@_id"
+            @onclick="ToggleEmojiPicker"
+            title="Insert emoji">
+        <span style="font-size:15px">😊</span>
+        <span>Emoji</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+
+    @if (_emojiOpen)
+    {
+        <div class="emoji-picker" id="emojiPicker-@_id" @onclick:stopPropagation>
+
+            <div class="picker-search">
+                <input type="text"
+                       placeholder="Search emoji..."
+                       @bind="_emojiSearch"
+                       @bind:event="oninput"
+                       @oninput="OnEmojiSearch" />
+            </div>
+
+            <div class="picker-tabs">
+                @foreach (var cat in EmojiCategories)
+                {
+                    <button type="button"
+                            class="tab-btn @(_emojiTab == cat.Key ? "active" : "")"
+                            @onclick="() => SetEmojiTab(cat.Key)">
+                        @cat.Icon @cat.Label
+                    </button>
+                }
+            </div>
+
+            <div class="picker-grid">
+                @foreach (var emoji in FilteredEmojis)
+                {
+                    var e = emoji;
+                    <button type="button" class="e-btn" title="@e" @onclick="() => InsertEmoji(e)">@e</button>
+                }
+            </div>
+
+            @if (_recentEmojis.Any())
+            {
+                <div class="picker-recent-label">Recently used</div>
+                <div class="picker-recent-row">
+                    @foreach (var emoji in _recentEmojis)
+                    {
+                        var e = emoji;
+                        <button type="button" class="e-btn" @onclick="() => InsertEmoji(e)">@e</button>
+                    }
+                </div>
+            }
+
+        </div>
+    }
+</div>
+
+@* ── Add these fields to your @code block ── *@
+@code {
+    private bool _emojiOpen = false;
+    private string _emojiSearch = "";
+    private string _emojiTab = "smileys";
+    private List<string> _recentEmojis = new();
+
+    private record EmojiCategory(string Key, string Icon, string Label, string[] Emojis);
+
+    private List<EmojiCategory> EmojiCategories => new()
+    {
+        new("smileys",  "😊", "Smileys",  new[]{"😀","😁","😂","🤣","😃","😄","😅","😆","😉","😊","😋","😎","🥹","😍","🥰","😘","😗","🙂","🤗","🤩","🤔","😐","😑","😶","🙄","😏","😣","😥","😮","🤐","😯","😪","😫","🥱","😴","😌","😛","😜","😝","🤤","😒","😓","😔","😕","🙃","🤑","😲","☹️","🙁","😖","😞","😟","😤","😢","😭","😦","😧","😨","😩","🤯","😬","😰","😱","🥵","🥶","😳","🤪","😵","🥴","😠","😡","🤬","😷","🤒","🤕","🤢","🤮","🤧","😇","🥳","🤠","🥺","🫠","🫡"}),
+        new("nature",   "🌿", "Nature",   new[]{"🌸","🌺","🌻","🌹","🌷","🌼","💐","🌾","🍀","🌿","☘️","🍃","🍂","🍁","🍄","🌱","🌲","🌳","🌴","🌵","🌙","☀️","⭐","🌟","💫","✨","☁️","🌈","🌊","❄️","🔥","💧","🦋","🐝","🐞","🦉","🐬","🐋","🦁","🐯","🐻","🦊","🐼","🐨","🐸","🐙","🦋"}),
+        new("food",     "🍕", "Food",     new[]{"🍎","🍊","🍋","🍇","🍓","🫐","🍑","🍒","🍍","🥭","🍌","🍉","🍅","🥑","🍆","🥦","🥕","🧄","🧅","🥔","🍞","🥐","🧀","🍳","🥚","🍖","🍗","🌭","🍔","🍟","🍕","🌮","🌯","🥗","🍝","🍜","🍲","🍛","🍣","🥟","🍱","🍤","🍙","🧁","🍰","🎂","🍭","🍬","🍫","🍿","🍩","🍪","☕","🍵","🧋","🥤","🍺","🥂","🍷"}),
+        new("activity", "⚽", "Activity", new[]{"⚽","🏀","🏈","⚾","🎾","🏐","🎱","🏓","🏸","⛳","🎣","🤿","🥊","🥋","🎯","⛸️","🛹","🏋️","🤸","🏊","🚴","🧘","🎠","🎡","🎢","🎭","🎨","🎤","🎧","🎼","🎵","🎶","🎹","🎸","🎷","🎺","🥁","🎲","🎮","🕹️","🎳","🎯","🪃","🏹"}),
+        new("travel",   "✈️", "Travel",   new[]{"✈️","🚀","🛸","🚁","🚂","🚄","🚇","🚌","🚗","🚕","🏎️","🏍️","🛵","🚲","🛴","🚢","⛵","🚤","🗺️","🗼","🗽","🏔️","⛰️","🌋","🏕️","🏖️","🏜️","🏝️","🏛️","🏰","💒","🏠","🏡","🏢","🏥","🏦","🏨","🏪","🏫","🕌","🕍","⛩️","🗿"}),
+        new("objects",  "💡", "Objects",  new[]{"⌚","📱","💻","⌨️","🖥️","📷","📸","📹","🎥","📞","☎️","📺","📻","🔋","🔌","💡","🔦","🕯️","🔧","🔨","🛠️","🔑","🗝️","🔒","🔓","🚪","🛋️","🛏️","📦","📫","📨","📩","📝","✏️","🖊️","📚","📖","📰","🗞️","🗒️","📎","📌","✂️","🖼️","🧸","🎁","🎀","🎊","🎉","🎈","🪄","🎩","👑","💎","💍","👓","🕶️"}),
+        new("symbols",  "❤️", "Symbols",  new[]{"❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","❣️","💕","💞","💓","💗","💖","💘","💝","💟","☮️","✌️","🤞","👍","👎","👏","🙌","🤝","🙏","💪","🦾","✅","❌","⭕","🔱","⚜️","🔰","♻️","💯","❓","❗","⭐","🌟","💫","✨","🔥","💥","🎯","🏆","🥇","🥈","🥉","🎖️","🎗️","🎫","🎟️"})
+    };
+
+    private IEnumerable<string> FilteredEmojis
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(_emojiSearch))
+                return EmojiCategories.SelectMany(c => c.Emojis)
+                                      .Distinct()
+                                      .Where(e => e.Contains(_emojiSearch.Trim()))
+                                      .Take(64);
+            return EmojiCategories.First(c => c.Key == _emojiTab).Emojis;
+        }
+    }
+
+    private void ToggleEmojiPicker() => _emojiOpen = !_emojiOpen;
+    private void SetEmojiTab(string tab) { _emojiTab = tab; _emojiSearch = ""; }
+    private void OnEmojiSearch(ChangeEventArgs e) => _emojiSearch = e.Value?.ToString() ?? "";
+
+    private async Task InsertEmoji(string emoji)
+    {
+        await JS.InvokeVoidAsync("RichTextEditor.insertText", _id, emoji);
+        await OnInput();
+
+        if (!_recentEmojis.Contains(emoji)) _recentEmojis.Insert(0, emoji);
+        if (_recentEmojis.Count > 8) _recentEmojis.RemoveAt(8);
+
+        // keep picker open so user can insert multiple
+        StateHasChanged();
+    }
+}
