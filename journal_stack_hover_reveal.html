@@ -1,0 +1,227 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
+:root {
+  --text-main: #2C231F;
+  --text-light: #7A6F66;
+  --accent-color: #556B55;
+  --card-bg: rgba(253, 251, 247, 0.95);
+  --border-color: rgba(212, 201, 189, 0.8);
+  --bg-main: #eee9e1;
+}
+.demo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg-main);
+  border-radius: 16px;
+  min-height: 340px;
+  gap: 16px;
+}
+.hint {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  font-weight: 700;
+  opacity: 0.7;
+}
+.journal-stack {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  cursor: pointer;
+}
+
+/* === Base stacked positions (resting state) === */
+.journal-card {
+  position: absolute;
+  width: 200px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(44,35,31,0.09);
+  transition: transform 0.45s cubic-bezier(.22,1,.36,1),
+              box-shadow 0.45s ease,
+              opacity 0.3s ease;
+  will-change: transform;
+}
+
+.journal-card:nth-child(1) {
+  top: 28px; left: 20px;
+  transform: rotate(4deg);
+  background: #f0ece3;
+  z-index: 1;
+  transition-delay: 0.12s;
+}
+.journal-card:nth-child(2) {
+  top: 14px; left: 10px;
+  transform: rotate(-2.5deg);
+  z-index: 2;
+  transition-delay: 0.06s;
+}
+.journal-card:nth-child(3) {
+  top: 0; left: 0;
+  transform: rotate(0deg);
+  z-index: 3;
+  transition-delay: 0s;
+}
+
+/* === Hover: fan out === */
+.journal-stack:hover .journal-card:nth-child(1) {
+  transform: rotate(-6deg) translate(-70px, 20px);
+  box-shadow: 0 14px 32px rgba(44,35,31,0.13);
+  transition-delay: 0.1s;
+}
+.journal-stack:hover .journal-card:nth-child(2) {
+  transform: rotate(0deg) translate(0px, -18px);
+  box-shadow: 0 14px 32px rgba(44,35,31,0.11);
+  transition-delay: 0.05s;
+}
+.journal-stack:hover .journal-card:nth-child(3) {
+  transform: rotate(5deg) translate(68px, 14px);
+  box-shadow: 0 18px 36px rgba(44,35,31,0.15);
+  transition-delay: 0s;
+}
+
+/* card content */
+.card-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  opacity: 0.7;
+  margin-bottom: 10px;
+}
+.card-date {
+  font-size: 0.65rem;
+  color: var(--text-light);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: 0.1em;
+}
+.card-line {
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(44,35,31,0.12);
+  margin-bottom: 7px;
+}
+.card-line.short { width: 55% }
+.card-line.med   { width: 80% }
+.card-line.full  { width: 100% }
+.card-line.accent { background: rgba(85,107,85,0.25) }
+
+/* writing animation on card 3 */
+.writing-line {
+  height: 7px; border-radius: 4px;
+  background: rgba(44,35,31,0.18);
+  width: 0;
+  animation: writeLine 0.5s ease 1.4s forwards;
+}
+.writing-line-2 {
+  height: 7px; border-radius: 4px;
+  background: rgba(44,35,31,0.12);
+  width: 0;
+  animation: writeLine 0.4s ease 1.9s forwards;
+  margin-top: 7px;
+}
+.cursor-blink {
+  width: 2px; height: 14px;
+  background: var(--accent-color);
+  border-radius: 1px;
+  position: absolute;
+  right: 18px; bottom: 18px;
+  animation: blink 1s step-end 2s infinite;
+}
+
+/* mood tags (appear on hover) */
+.card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: rgba(85,107,85,0.12);
+  color: var(--accent-color);
+  border: 1px solid rgba(85,107,85,0.2);
+  font-weight: 700;
+  margin-top: 8px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.journal-stack:hover .card-tag {
+  opacity: 1;
+  transform: translateY(0);
+}
+.journal-card:nth-child(1) .card-tag { transition-delay: 0.35s; }
+.journal-card:nth-child(2) .card-tag { transition-delay: 0.25s; }
+.journal-card:nth-child(3) .card-tag { transition-delay: 0.18s; }
+
+/* subtle lift indicator */
+.journal-stack::after {
+  content: 'hover to open';
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  opacity: 0.5;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: opacity 0.3s;
+}
+.journal-stack:hover::after { opacity: 0; }
+
+@keyframes writeLine { from { width: 0 } to { width: 100% } }
+@keyframes blink { 0%,100% { opacity: 1 } 50% { opacity: 0 } }
+@keyframes floatCard1 { 0%,100% { transform: rotate(4deg) translateY(0) } 50% { transform: rotate(4deg) translateY(-5px) } }
+@keyframes floatCard2 { 0%,100% { transform: rotate(-2.5deg) translateY(0) } 50% { transform: rotate(-2.5deg) translateY(-7px) } }
+@keyframes floatCard3 { 0%,100% { transform: rotate(0deg) translateY(0) } 50% { transform: rotate(0deg) translateY(-9px) } }
+</style>
+
+<div class="demo-wrap">
+  <p class="hint">Your journals</p>
+
+  <div class="journal-stack">
+
+    <!-- Card 1 — oldest -->
+    <div class="journal-card">
+      <div class="card-date">MON, JAN 6</div>
+      <div class="card-line full"></div>
+      <div class="card-line med"></div>
+      <div class="card-line short"></div>
+      <div class="card-tag">🌤 reflective</div>
+    </div>
+
+    <!-- Card 2 — middle -->
+    <div class="journal-card">
+      <div class="card-dot"></div>
+      <div class="card-date">TUE, JAN 7</div>
+      <div class="card-line full"></div>
+      <div class="card-line med"></div>
+      <div class="card-line full accent"></div>
+      <div class="card-tag">✨ grateful</div>
+    </div>
+
+    <!-- Card 3 — today (front) -->
+    <div class="journal-card" style="position: relative;">
+      <div class="card-dot"></div>
+      <div class="card-date">TODAY</div>
+      <div class="writing-line"></div>
+      <div class="writing-line-2"></div>
+      <div class="cursor-blink"></div>
+      <div class="card-tag">📝 in progress</div>
+    </div>
+
+  </div>
+</div>
