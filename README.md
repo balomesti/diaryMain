@@ -1,6 +1,6 @@
-# Diary Me
+# Inkly
 
-Diary Me is a simple digital diary app where you can:
+Inkly is a simple digital diary app where you can:
 - Create diary entries (title + notes + date)
 - Optionally attach an image to an entry
 - View your recent entries on the Home page
@@ -43,7 +43,7 @@ dotnet run
 Open the app in your browser:
 - `http://localhost:5173`
 
-## How to Use Diary Me (No Developer Knowledge Needed)
+## How to Use Inkly (No Developer Knowledge Needed)
 
 1. Open the app: `http://localhost:5173`
 2. Register an account (Sign Up)
