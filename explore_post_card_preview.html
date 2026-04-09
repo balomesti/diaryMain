@@ -1,0 +1,202 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .feed { max-width: 640px; margin: 0 auto; padding: 1.5rem 1rem 2rem; display: flex; flex-direction: column; gap: 2rem; }
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 20px; padding: 20px; }
+  .author-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: #D4C9BD; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: #7a6e64; }
+  .author-meta { display: flex; flex-direction: column; gap: 2px; }
+  .author-name { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+  .timestamp { font-size: 12px; color: var(--color-text-tertiary); }
+
+  .gallery { width: 100%; border-radius: 14px; overflow: hidden; margin-bottom: 16px; background: var(--color-background-secondary); position: relative; aspect-ratio: 16/9; }
+  .gallery-img { width: 100%; height: 100%; object-fit: cover; display: none; }
+  .gallery-img.active { display: block; }
+  .gallery-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .gallery-placeholder svg { opacity: 0.25; }
+  .gallery-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: background 0.2s; }
+  .dot.active { background: #fff; }
+  .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.25); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; }
+  .gallery-nav:hover { background: rgba(0,0,0,0.45); }
+  .gallery-nav.prev { left: 10px; }
+  .gallery-nav.next { right: 10px; }
+  .gallery-count { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.4); color: #fff; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 20px; }
+
+  .badge { display: inline-block; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; }
+  .post-title { font-size: 16px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 8px; line-height: 1.4; }
+  .post-caption { font-size: 14px; color: var(--color-text-secondary); line-height: 1.6; }
+  .post-caption.clamped { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .read-more-btn { background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--color-text-secondary); padding: 6px 0 0; text-decoration: underline; text-underline-offset: 2px; }
+  .read-more-btn:hover { color: var(--color-text-primary); }
+
+  .actions-row { display: flex; align-items: center; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 0.5px solid var(--color-border-tertiary); }
+  .action-btn { display: flex; align-items: center; gap: 5px; background: none; border: 0.5px solid var(--color-border-tertiary); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 13px; color: var(--color-text-secondary); font-family: var(--font-sans); transition: background 0.15s, color 0.15s; }
+  .action-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+  .action-btn svg { flex-shrink: 0; }
+  .action-btn.share-done { color: var(--color-text-success); border-color: var(--color-border-success); }
+  .spacer { flex: 1; }
+
+  .label { font-size: 11px; color: var(--color-text-tertiary); padding: 0.25rem 0 0.5rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+</style>
+
+<div class="feed">
+
+  <p class="label">New features preview</p>
+
+  <div class="card">
+    <div class="author-row">
+      <div class="avatar">AJ</div>
+      <div class="author-meta">
+        <span class="author-name">Admin Team</span>
+        <span class="timestamp" id="ts1"></span>
+      </div>
+    </div>
+
+    <div class="gallery" id="gallery1">
+      <div class="gallery-placeholder">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      </div>
+      <span class="gallery-count" style="display:none">1 / 3</span>
+      <div class="gallery-dots" style="display:none">
+        <div class="dot active" onclick="setSlide('gallery1',0)"></div>
+        <div class="dot" onclick="setSlide('gallery1',1)"></div>
+        <div class="dot" onclick="setSlide('gallery1',2)"></div>
+      </div>
+      <button class="gallery-nav prev" style="display:none" onclick="prevSlide('gallery1')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="gallery-nav next" style="display:none" onclick="nextSlide('gallery1')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+
+    <div>
+      <span class="badge">Explore</span>
+      <h2 class="post-title">Welcome to the new Explore feed</h2>
+      <p class="post-caption clamped" id="cap1">We're excited to announce the redesigned Explore page, built to make it easier than ever to stay up to date with the latest news from our team. From today you'll see richer posts with images, videos, and more detailed updates — all in a clean, scrollable feed. We've also added timestamps so you always know how fresh each post is, and a new share button so you can send posts to friends directly.</p>
+      <button class="read-more-btn" id="rmb1" onclick="toggleReadMore('cap1','rmb1')">Read more</button>
+    </div>
+
+    <div class="actions-row">
+      <button class="action-btn" onclick="handleShare(this, 'Welcome to the new Explore feed')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="author-row">
+      <div class="avatar">AJ</div>
+      <div class="author-meta">
+        <span class="author-name">Admin Team</span>
+        <span class="timestamp" id="ts2"></span>
+      </div>
+    </div>
+
+    <div class="gallery" id="gallery2" style="background:#b5c4b1;">
+      <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/><path d="M10 7V5a2 2 0 0 0-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+        <span style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:500;">3 images · tap arrows to browse</span>
+      </div>
+      <span class="gallery-count">1 / 3</span>
+      <div class="gallery-dots">
+        <div class="dot active" onclick="setSlide('gallery2',0)"></div>
+        <div class="dot" onclick="setSlide('gallery2',1)"></div>
+        <div class="dot" onclick="setSlide('gallery2',2)"></div>
+      </div>
+      <button class="gallery-nav prev" onclick="prevSlide('gallery2')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="gallery-nav next" onclick="nextSlide('gallery2')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+
+    <div>
+      <span class="badge">Explore</span>
+      <h2 class="post-title">Community highlights — April 2026</h2>
+      <p class="post-caption clamped" id="cap2">This month we're spotlighting some of the most active members in our community. These are people who have logged entries every single day, shared their journeys, and helped make this space warmer and more welcoming for everyone. A huge thank you to each of you — your consistency is genuinely inspiring to the whole team and to newer members who are just getting started on their own journeys.</p>
+      <button class="read-more-btn" id="rmb2" onclick="toggleReadMore('cap2','rmb2')">Read more</button>
+    </div>
+
+    <div class="actions-row">
+      <button class="action-btn" onclick="handleShare(this, 'Community highlights — April 2026')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function timeAgo(date) {
+    const diff = Math.floor((Date.now() - date) / 1000);
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+    if (diff < 604800) return Math.floor(diff/86400) + 'd ago';
+    return date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  }
+
+  document.getElementById('ts1').textContent = timeAgo(new Date(Date.now() - 7200000));
+  document.getElementById('ts2').textContent = timeAgo(new Date(Date.now() - 172800000));
+
+  function toggleReadMore(capId, btnId) {
+    const cap = document.getElementById(capId);
+    const btn = document.getElementById(btnId);
+    const expanded = !cap.classList.contains('clamped');
+    cap.classList.toggle('clamped', expanded);
+    btn.textContent = expanded ? 'Read more' : 'Show less';
+  }
+
+  const galleryState = {};
+  function initGallery(id, count) {
+    galleryState[id] = { current: 0, count };
+  }
+  initGallery('gallery1', 1);
+  initGallery('gallery2', 3);
+
+  function updateGallery(id) {
+    const s = galleryState[id];
+    const el = document.getElementById(id);
+    const count = el.querySelector('.gallery-count');
+    const dots = el.querySelectorAll('.dot');
+    if (count) count.textContent = (s.current + 1) + ' / ' + s.count;
+    dots.forEach((d, i) => d.classList.toggle('active', i === s.current));
+    const bg = ['#b5c4b1','#c4b5b5','#b5b9c4'];
+    if (id === 'gallery2') el.style.background = bg[s.current];
+  }
+
+  function setSlide(id, idx) {
+    galleryState[id].current = idx;
+    updateGallery(id);
+  }
+  function prevSlide(id) {
+    const s = galleryState[id];
+    s.current = (s.current - 1 + s.count) % s.count;
+    updateGallery(id);
+  }
+  function nextSlide(id) {
+    const s = galleryState[id];
+    s.current = (s.current + 1) % s.count;
+    updateGallery(id);
+  }
+
+  function handleShare(btn, title) {
+    const text = 'Check out: ' + title;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.classList.add('share-done');
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+        setTimeout(() => {
+          btn.classList.remove('share-done');
+          btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share';
+        }, 2000);
+      });
+    }
+  }
+</script>
