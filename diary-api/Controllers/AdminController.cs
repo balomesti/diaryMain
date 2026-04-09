@@ -79,7 +79,7 @@ public class AdminController : ControllerBase
             ImageUrl = imageUrl,
             VideoUrl = videoUrl,
             Author = author,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = dto.CreatedAt != default ? dto.CreatedAt : DateTime.UtcNow
         };
 
         _context.NewsPosts.Add(news);
@@ -93,7 +93,10 @@ public class AdminController : ControllerBase
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
         announcement.Author = User.FindFirstValue(ClaimTypes.Name) ?? "Admin";
-        announcement.CreatedAt = DateTime.UtcNow;
+        if (announcement.CreatedAt == default)
+        {
+            announcement.CreatedAt = DateTime.UtcNow;
+        }
         _context.Announcements.Add(announcement);
         await _context.SaveChangesAsync();
         return Ok(announcement);
@@ -201,5 +204,6 @@ public class AdminController : ControllerBase
 
         public IFormFile? Image { get; set; }
         public IFormFile? Video { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }
