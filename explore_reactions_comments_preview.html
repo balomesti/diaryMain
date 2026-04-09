@@ -1,0 +1,350 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+
+.feed { max-width: 620px; margin: 0 auto; padding: 1.5rem 1rem 2rem; display: flex; flex-direction: column; gap: 2rem; }
+
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 20px; padding: 20px; }
+
+.author-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: #D4C9BD; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: #7a6e64; }
+.author-meta { display: flex; flex-direction: column; gap: 2px; }
+.author-name { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+.timestamp { font-size: 12px; color: var(--color-text-tertiary); }
+
+.media { width: 100%; aspect-ratio: 16/9; border-radius: 14px; background: #c8d5c4; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; }
+.media svg { opacity: 0.3; }
+
+.post-title { font-size: 16px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 6px; line-height: 1.4; }
+.post-caption { font-size: 14px; color: var(--color-text-secondary); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+.divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 14px 0; }
+
+/* ── Reaction bar ── */
+.reaction-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.reaction-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 20px; padding: 5px 11px;
+  cursor: pointer; font-size: 13px; color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  transition: transform 0.15s, border-color 0.15s, background 0.15s;
+  user-select: none;
+}
+.reaction-btn:hover { background: var(--color-background-tertiary); transform: scale(1.06); }
+.reaction-btn.reacted {
+  background: #FEF3C7; border-color: #FDE68A; color: #92400E;
+}
+.reaction-btn.reacted.heart { background: #FEE2E2; border-color: #FECACA; color: #991B1B; }
+.reaction-btn.reacted.fire  { background: #FEF3C7; border-color: #FDE68A; color: #92400E; }
+.reaction-btn.reacted.bulb  { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
+.reaction-btn.reacted.clap  { background: #EFF6FF; border-color: #BFDBFE; color: #1E40AF; }
+.reaction-emoji { font-size: 16px; line-height: 1; }
+.reaction-count { font-size: 13px; font-weight: 500; min-width: 8px; }
+
+.action-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.icon-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: none; border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 8px; padding: 5px 11px; cursor: pointer;
+  font-size: 13px; color: var(--color-text-secondary); font-family: var(--font-sans);
+  transition: background 0.15s, color 0.15s;
+}
+.icon-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+.icon-btn.active { color: var(--color-text-primary); }
+
+/* ── Comments section ── */
+.comments-section { margin-top: 14px; }
+.comments-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+
+.comment-row { display: flex; gap: 10px; align-items: flex-start; }
+.comment-avatar { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; }
+.comment-bubble { flex: 1; background: var(--color-background-secondary); border-radius: 12px; border-bottom-left-radius: 4px; padding: 9px 12px; }
+.comment-author { font-size: 12px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 3px; }
+.comment-text { font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; }
+.comment-meta { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+.comment-time { font-size: 11px; color: var(--color-text-tertiary); }
+.comment-like-btn { background: none; border: none; cursor: pointer; font-size: 11px; color: var(--color-text-tertiary); font-family: var(--font-sans); padding: 0; transition: color 0.15s; }
+.comment-like-btn:hover { color: #991B1B; }
+.comment-like-btn.liked { color: #DC2626; font-weight: 500; }
+
+.show-more-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--color-text-tertiary); font-family: var(--font-sans); padding: 0 0 10px; text-decoration: underline; text-underline-offset: 2px; }
+.show-more-btn:hover { color: var(--color-text-secondary); }
+
+/* ── Comment input ── */
+.comment-input-row { display: flex; gap: 8px; align-items: flex-end; }
+.comment-input-avatar { width: 28px; height: 28px; border-radius: 50%; background: #b5c4b1; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #3d5a3d; margin-top: 2px; }
+.comment-input-wrap { flex: 1; display: flex; align-items: center; gap: 6px; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-secondary); border-radius: 20px; padding: 7px 10px 7px 14px; transition: border-color 0.2s; }
+.comment-input-wrap:focus-within { border-color: var(--color-border-primary); }
+.comment-input-wrap input { flex: 1; background: none; border: none; outline: none; font-size: 13px; color: var(--color-text-primary); font-family: var(--font-sans); }
+.comment-input-wrap input::placeholder { color: var(--color-text-tertiary); }
+.comment-send-btn { background: none; border: none; cursor: pointer; padding: 2px; color: var(--color-text-tertiary); display: flex; align-items: center; transition: color 0.15s; flex-shrink: 0; }
+.comment-send-btn:hover { color: var(--color-text-primary); }
+.comment-send-btn:disabled { opacity: 0.3; cursor: default; }
+
+.bounce { animation: bounce 0.3s cubic-bezier(.34,1.56,.64,1); }
+@keyframes bounce { from { transform: scale(0.7); } to { transform: scale(1); } }
+.slide-in { animation: slideIn 0.25s ease; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="feed">
+
+  <div class="card" id="card1">
+    <div class="author-row">
+      <div class="avatar">AJ</div>
+      <div class="author-meta">
+        <span class="author-name">Admin Team</span>
+        <span class="timestamp">2h ago</span>
+      </div>
+    </div>
+
+    <div class="media">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+    </div>
+
+    <p class="post-title">Welcome to the new Explore feed</p>
+    <p class="post-caption">We're excited to announce the redesigned Explore page. From today you'll see richer posts with images, videos, timestamps, and a share button so you can send posts directly to friends.</p>
+
+    <hr class="divider">
+
+    <div class="reaction-bar" id="reactions1">
+      <button class="reaction-btn heart" onclick="toggleReaction(this,'reactions1','heart')" data-key="heart">
+        <span class="reaction-emoji">❤️</span><span class="reaction-count">12</span>
+      </button>
+      <button class="reaction-btn fire" onclick="toggleReaction(this,'reactions1','fire')" data-key="fire">
+        <span class="reaction-emoji">🔥</span><span class="reaction-count">8</span>
+      </button>
+      <button class="reaction-btn bulb" onclick="toggleReaction(this,'reactions1','bulb')" data-key="bulb">
+        <span class="reaction-emoji">💡</span><span class="reaction-count">3</span>
+      </button>
+      <button class="reaction-btn clap" onclick="toggleReaction(this,'reactions1','clap')" data-key="clap">
+        <span class="reaction-emoji">👏</span><span class="reaction-count">5</span>
+      </button>
+      <div class="action-right">
+        <button class="icon-btn" id="toggleComments1" onclick="toggleComments('section1','toggleComments1')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span id="commentCount1">4</span>
+        </button>
+        <button class="icon-btn" onclick="handleShare(this,'Welcome to the new Explore feed')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="comments-section" id="section1" style="display:none">
+      <hr class="divider" style="margin-top:14px">
+      <div class="comments-list" id="comments1">
+        <div class="comment-row slide-in">
+          <div class="comment-avatar" style="background:#dbeafe;color:#1e40af">SR</div>
+          <div class="comment-bubble">
+            <div class="comment-author">Sarah R.</div>
+            <div class="comment-text">Love this update! The timestamps are so helpful.</div>
+            <div class="comment-meta">
+              <span class="comment-time">1h ago</span>
+              <button class="comment-like-btn" onclick="likeComment(this)">♥ Like</button>
+            </div>
+          </div>
+        </div>
+        <div class="comment-row slide-in">
+          <div class="comment-avatar" style="background:#fce7f3;color:#9d174d">MK</div>
+          <div class="comment-bubble">
+            <div class="comment-author">Mark K.</div>
+            <div class="comment-text">Finally! Been waiting for the share button 🙌</div>
+            <div class="comment-meta">
+              <span class="comment-time">45m ago</span>
+              <button class="comment-like-btn" onclick="likeComment(this)">♥ Like</button>
+            </div>
+          </div>
+        </div>
+        <div class="comment-row slide-in" id="extra1a" style="display:none">
+          <div class="comment-avatar" style="background:#d1fae5;color:#065f46">JL</div>
+          <div class="comment-bubble">
+            <div class="comment-author">Jamie L.</div>
+            <div class="comment-text">The gallery carousel is a great touch too!</div>
+            <div class="comment-meta">
+              <span class="comment-time">30m ago</span>
+              <button class="comment-like-btn" onclick="likeComment(this)">♥ Like</button>
+            </div>
+          </div>
+        </div>
+        <div class="comment-row slide-in" id="extra1b" style="display:none">
+          <div class="comment-avatar" style="background:#ede9fe;color:#5b21b6">TN</div>
+          <div class="comment-bubble">
+            <div class="comment-author">Tina N.</div>
+            <div class="comment-text">This is exactly what the app needed.</div>
+            <div class="comment-meta">
+              <span class="comment-time">10m ago</span>
+              <button class="comment-like-btn" onclick="likeComment(this)">♥ Like</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="show-more-btn" id="showMore1" onclick="showMore('extra1a','extra1b','showMore1')">View 2 more comments</button>
+      <div class="comment-input-row">
+        <div class="comment-input-avatar">Me</div>
+        <div class="comment-input-wrap">
+          <input type="text" id="input1" placeholder="Write a comment…" oninput="toggleSend('send1',this.value)" onkeydown="if(event.key==='Enter') postComment('comments1','input1','send1','commentCount1')">
+          <button class="comment-send-btn" id="send1" disabled onclick="postComment('comments1','input1','send1','commentCount1')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="card2">
+    <div class="author-row">
+      <div class="avatar">AJ</div>
+      <div class="author-meta">
+        <span class="author-name">Admin Team</span>
+        <span class="timestamp">2d ago</span>
+      </div>
+    </div>
+
+    <div class="media" style="background:#c4b5b5;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+    </div>
+
+    <p class="post-title">Community highlights — April 2026</p>
+    <p class="post-caption">This month we're spotlighting the most active members. These are people who have logged entries every single day and helped make this space warmer for everyone.</p>
+
+    <hr class="divider">
+
+    <div class="reaction-bar" id="reactions2">
+      <button class="reaction-btn heart reacted" onclick="toggleReaction(this,'reactions2','heart')" data-key="heart">
+        <span class="reaction-emoji">❤️</span><span class="reaction-count">24</span>
+      </button>
+      <button class="reaction-btn fire" onclick="toggleReaction(this,'reactions2','fire')" data-key="fire">
+        <span class="reaction-emoji">🔥</span><span class="reaction-count">11</span>
+      </button>
+      <button class="reaction-btn bulb" onclick="toggleReaction(this,'reactions2','bulb')" data-key="bulb">
+        <span class="reaction-emoji">💡</span><span class="reaction-count">2</span>
+      </button>
+      <button class="reaction-btn clap" onclick="toggleReaction(this,'reactions2','clap')" data-key="clap">
+        <span class="reaction-emoji">👏</span><span class="reaction-count">19</span>
+      </button>
+      <div class="action-right">
+        <button class="icon-btn" id="toggleComments2" onclick="toggleComments('section2','toggleComments2')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span id="commentCount2">1</span>
+        </button>
+        <button class="icon-btn" onclick="handleShare(this,'Community highlights — April 2026')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="comments-section" id="section2" style="display:none">
+      <hr class="divider" style="margin-top:14px">
+      <div class="comments-list" id="comments2">
+        <div class="comment-row slide-in">
+          <div class="comment-avatar" style="background:#fef3c7;color:#92400e">BW</div>
+          <div class="comment-bubble">
+            <div class="comment-author">Ben W.</div>
+            <div class="comment-text">So proud of everyone featured here, keep it up! 💪</div>
+            <div class="comment-meta">
+              <span class="comment-time">1d ago</span>
+              <button class="comment-like-btn" onclick="likeComment(this)">♥ Like</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comment-input-row">
+        <div class="comment-input-avatar">Me</div>
+        <div class="comment-input-wrap">
+          <input type="text" id="input2" placeholder="Write a comment…" oninput="toggleSend('send2',this.value)" onkeydown="if(event.key==='Enter') postComment('comments2','input2','send2','commentCount2')">
+          <button class="comment-send-btn" id="send2" disabled onclick="postComment('comments2','input2','send2','commentCount2')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleReaction(btn, barId, key) {
+  const wasReacted = btn.classList.contains('reacted');
+  const countEl = btn.querySelector('.reaction-count');
+  let count = parseInt(countEl.textContent);
+  if (wasReacted) {
+    btn.classList.remove('reacted');
+    countEl.textContent = count - 1;
+  } else {
+    btn.classList.add('reacted');
+    countEl.textContent = count + 1;
+    btn.classList.add('bounce');
+    btn.addEventListener('animationend', () => btn.classList.remove('bounce'), { once: true });
+  }
+}
+
+function toggleComments(sectionId, btnId) {
+  const section = document.getElementById(sectionId);
+  const btn = document.getElementById(btnId);
+  const open = section.style.display === 'none';
+  section.style.display = open ? 'block' : 'none';
+  btn.classList.toggle('active', open);
+}
+
+function showMore(idA, idB, btnId) {
+  document.getElementById(idA).style.display = 'flex';
+  document.getElementById(idB).style.display = 'flex';
+  document.getElementById(btnId).style.display = 'none';
+}
+
+function likeComment(btn) {
+  btn.classList.toggle('liked');
+  btn.textContent = btn.classList.contains('liked') ? '♥ Liked' : '♥ Like';
+}
+
+function toggleSend(sendId, val) {
+  document.getElementById(sendId).disabled = !val.trim();
+}
+
+const avatarColors = [
+  ['#dbeafe','#1e40af'],['#d1fae5','#065f46'],['#ede9fe','#5b21b6'],
+  ['#fce7f3','#9d174d'],['#fef3c7','#92400e'],['#fee2e2','#991b1b']
+];
+let colorIdx = 0;
+
+function postComment(listId, inputId, sendId, countId) {
+  const input = document.getElementById(inputId);
+  const val = input.value.trim();
+  if (!val) return;
+
+  const list = document.getElementById(listId);
+  const countEl = document.getElementById(countId);
+  const [bg, fg] = avatarColors[colorIdx % avatarColors.length];
+  colorIdx++;
+
+  const row = document.createElement('div');
+  row.className = 'comment-row slide-in';
+  row.innerHTML = `
+    <div class="comment-avatar" style="background:${bg};color:${fg}">Me</div>
+    <div class="comment-bubble">
+      <div class="comment-author">You</div>
+      <div class="comment-text">${val.replace(/</g,'&lt;')}</div>
+      <div class="comment-meta">
+        <span class="comment-time">just now</span>
+        <button class="comment-like-btn" onclick="likeComment(this)">♥ Like</button>
+      </div>
+    </div>`;
+  list.appendChild(row);
+  countEl.textContent = parseInt(countEl.textContent) + 1;
+  input.value = '';
+  document.getElementById(sendId).disabled = true;
+}
+
+function handleShare(btn, title) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText('Check out: ' + title);
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+    setTimeout(() => btn.innerHTML = orig, 1800);
+  }
+}
+</script>
