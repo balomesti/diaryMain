@@ -79,7 +79,7 @@ public class AdminController : ControllerBase
             ImageUrl = imageUrl,
             VideoUrl = videoUrl,
             Author = author,
-            CreatedAt = dto.CreatedAt != default ? dto.CreatedAt : DateTime.UtcNow
+            CreatedAt = dto.CreatedAt != default ? dto.CreatedAt : DateTime.Now
         };
 
         _context.NewsPosts.Add(news);
@@ -95,7 +95,7 @@ public class AdminController : ControllerBase
         announcement.Author = User.FindFirstValue(ClaimTypes.Name) ?? "Admin";
         if (announcement.CreatedAt == default)
         {
-            announcement.CreatedAt = DateTime.UtcNow;
+            announcement.CreatedAt = DateTime.Now;
         }
         _context.Announcements.Add(announcement);
         await _context.SaveChangesAsync();
