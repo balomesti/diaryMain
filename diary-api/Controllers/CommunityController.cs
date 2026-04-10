@@ -277,8 +277,9 @@ public class CommunityController : ControllerBase
             comment.Id,
             comment.NewsPostId,
             Author = username,
+            ProfileImg = user?.ProfileImg,
             comment.Text,
-            comment.CreatedAt
+            CreatedAt = DateTime.SpecifyKind(comment.CreatedAt, DateTimeKind.Utc)
         });
     }
 
@@ -295,8 +296,9 @@ public class CommunityController : ControllerBase
                 c.Id,
                 c.NewsPostId,
                 Author = c.User != null ? c.User.Username : "Anonymous",
+                ProfileImg = c.User != null ? c.User.ProfileImg : null,
                 c.Text,
-                c.CreatedAt
+                CreatedAt = DateTime.SpecifyKind(c.CreatedAt, DateTimeKind.Utc)
             })
             .ToListAsync();
 
