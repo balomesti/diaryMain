@@ -73,3 +73,14 @@ public class Reaction
     public NewsPost? NewsPost { get; set; }
     public User? User { get; set; }
 }
+
+public class Comment
+{
+    public int Id { get; set; }
+    public int NewsPostId { get; set; }
+    public int UserId { get; set; }
+    public string Text { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public NewsPost? NewsPost { get; set; }
+    public User? User { get; set; }
+}

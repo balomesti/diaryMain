@@ -243,6 +243,66 @@ public class CommunityController : ControllerBase
         return Ok(userReactions);
     }
 
+    [HttpPost("comment")]
+    [Authorize]
+    public async Task<IActionResult> AddComment([FromBody] CommentRequestDto request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "Invalid user" });
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Text))
+        {
+            return BadRequest(new { message = "Comment text is required" });
+        }
+
+        var user = await _context.Users.FindAsync(userId);
+        var username = user?.Username ?? "Anonymous";
+
+        var comment = new Comment
+        {
+            NewsPostId = request.NewsPostId,
+            UserId = userId,
+            Text = request.Text.Trim(),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.Comments.Add(comment);
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            comment.Id,
+            comment.NewsPostId,
+            Author = username,
+            comment.Text,
+            comment.CreatedAt
+        });
+    }
+
+    [HttpGet("comments/{newsPostId:int}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetComments(int newsPostId)
+    {
+        var comments = await _context.Comments
+            .Where(c => c.NewsPostId == newsPostId)
+            .Include(c => c.User)
+            .OrderByDescending(c => c.CreatedAt)
+            .Select(c => new
+            {
+                c.Id,
+                c.NewsPostId,
+                Author = c.User != null ? c.User.Username : "Anonymous",
+                c.Text,
+                c.CreatedAt
+            })
+            .ToListAsync();
+
+        return Ok(comments);
+    }
+
     private static string GetInitials(string name)
     {
         if (string.IsNullOrWhiteSpace(name)) return "??";
@@ -257,4 +317,10 @@ public class ReactionRequestDto
 {
     public int NewsPostId { get; set; }
     public string ReactionType { get; set; } = string.Empty;
+}
+
+public class CommentRequestDto
+{
+    public int NewsPostId { get; set; }
+    public string Text { get; set; } = string.Empty;
 }

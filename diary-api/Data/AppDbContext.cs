@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<NewsPost> NewsPosts { get; set; }
     public DbSet<Announcement> Announcements { get; set; }
     public DbSet<Reaction> Reactions { get; set; }
+    public DbSet<Comment> Comments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
