@@ -153,6 +153,15 @@ using (var scope = app.Services.CreateScope())
                 Author TEXT,
                 CreatedAt TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS Reactions (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                NewsPostId INTEGER NOT NULL,
+                UserId INTEGER NOT NULL,
+                ReactionType TEXT NOT NULL,
+                CreatedAt TEXT NOT NULL,
+                FOREIGN KEY (NewsPostId) REFERENCES NewsPosts(Id) ON DELETE CASCADE,
+                FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE
+            );
         ");
     }
     catch { }

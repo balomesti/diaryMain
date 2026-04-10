@@ -157,6 +157,92 @@ public class CommunityController : ControllerBase
         return streak;
     }
 
+    [HttpPost("reaction")]
+    [Authorize]
+    public async Task<IActionResult> ToggleReaction([FromBody] ReactionRequestDto request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "Invalid user" });
+        }
+
+        var validReactions = new[] { "heart", "fire", "bulb", "clap" };
+        if (!validReactions.Contains(request.ReactionType.ToLower()))
+        {
+            return BadRequest(new { message = "Invalid reaction type" });
+        }
+
+        var existingReaction = await _context.Reactions
+            .FirstOrDefaultAsync(r => r.NewsPostId == request.NewsPostId && r.UserId == userId && r.ReactionType.ToLower() == request.ReactionType.ToLower());
+
+        if (existingReaction != null)
+        {
+            _context.Reactions.Remove(existingReaction);
+            await _context.SaveChangesAsync();
+
+            var counts = await _context.Reactions
+                .Where(r => r.NewsPostId == request.NewsPostId)
+                .GroupBy(r => r.ReactionType.ToLower())
+                .Select(g => new { Type = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return Ok(new { toggled = false, counts });
+        }
+        else
+        {
+            var reaction = new Reaction
+            {
+                NewsPostId = request.NewsPostId,
+                UserId = userId,
+                ReactionType = request.ReactionType.ToLower(),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Reactions.Add(reaction);
+            await _context.SaveChangesAsync();
+
+            var counts = await _context.Reactions
+                .Where(r => r.NewsPostId == request.NewsPostId)
+                .GroupBy(r => r.ReactionType.ToLower())
+                .Select(g => new { Type = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return Ok(new { toggled = true, counts });
+        }
+    }
+
+    [HttpGet("reactions/{newsPostId:int}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetReactions(int newsPostId)
+    {
+        var counts = await _context.Reactions
+            .Where(r => r.NewsPostId == newsPostId)
+            .GroupBy(r => r.ReactionType.ToLower())
+            .Select(g => new { Type = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        return Ok(counts);
+    }
+
+    [HttpGet("reactions/{newsPostId:int}/user")]
+    [Authorize]
+    public async Task<IActionResult> GetUserReactions(int newsPostId)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "Invalid user" });
+        }
+
+        var userReactions = await _context.Reactions
+            .Where(r => r.NewsPostId == newsPostId && r.UserId == userId)
+            .Select(r => r.ReactionType.ToLower())
+            .ToListAsync();
+
+        return Ok(userReactions);
+    }
+
     private static string GetInitials(string name)
     {
         if (string.IsNullOrWhiteSpace(name)) return "??";
@@ -165,4 +251,10 @@ public class CommunityController : ControllerBase
             return $"{parts[0][0]}{parts[1][0]}".ToUpper();
         return parts[0].Length >= 2 ? parts[0][..2].ToUpper() : parts[0].ToUpper();
     }
+}
+
+public class ReactionRequestDto
+{
+    public int NewsPostId { get; set; }
+    public string ReactionType { get; set; } = string.Empty;
 }
