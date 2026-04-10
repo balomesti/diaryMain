@@ -171,6 +171,14 @@ using (var scope = app.Services.CreateScope())
                 FOREIGN KEY (NewsPostId) REFERENCES NewsPosts(Id) ON DELETE CASCADE,
                 FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE
             );
+            CREATE TABLE IF NOT EXISTS CommentLikes (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                CommentId INTEGER NOT NULL,
+                UserId INTEGER NOT NULL,
+                CreatedAt TEXT NOT NULL,
+                FOREIGN KEY (CommentId) REFERENCES Comments(Id) ON DELETE CASCADE,
+                FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE
+            );
         ");
     }
     catch { }

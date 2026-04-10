@@ -287,9 +287,17 @@ public class CommunityController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetComments(int newsPostId)
     {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        int? currentUserId = null;
+        if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var uid))
+        {
+            currentUserId = uid;
+        }
+
         var comments = await _context.Comments
             .Where(c => c.NewsPostId == newsPostId)
             .Include(c => c.User)
+            .Include(c => c.Likes)
             .OrderByDescending(c => c.CreatedAt)
             .Select(c => new
             {
@@ -298,11 +306,75 @@ public class CommunityController : ControllerBase
                 Author = c.User != null ? c.User.Username : "Anonymous",
                 ProfileImg = c.User != null ? c.User.ProfileImg : null,
                 c.Text,
+                LikeCount = c.Likes.Count(),
+                Liked = currentUserId.HasValue && c.Likes.Any(l => l.UserId == currentUserId.Value),
                 CreatedAt = DateTime.SpecifyKind(c.CreatedAt, DateTimeKind.Utc)
             })
             .ToListAsync();
 
         return Ok(comments);
+    }
+
+    [HttpPost("comment/like")]
+    [Authorize]
+    public async Task<IActionResult> ToggleCommentLike([FromBody] CommentLikeRequestDto request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "Invalid user" });
+        }
+
+        var existingLike = await _context.CommentLikes
+            .FirstOrDefaultAsync(l => l.CommentId == request.CommentId && l.UserId == userId);
+
+        if (existingLike != null)
+        {
+            _context.CommentLikes.Remove(existingLike);
+            await _context.SaveChangesAsync();
+
+            var likeCount = await _context.CommentLikes.CountAsync(l => l.CommentId == request.CommentId);
+            return Ok(new { liked = false, likeCount });
+        }
+        else
+        {
+            var like = new CommentLike
+            {
+                CommentId = request.CommentId,
+                UserId = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.CommentLikes.Add(like);
+            await _context.SaveChangesAsync();
+
+            var likeCount = await _context.CommentLikes.CountAsync(l => l.CommentId == request.CommentId);
+            return Ok(new { liked = true, likeCount });
+        }
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "Invalid user" });
+        }
+
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        return Ok(new
+        {
+            user.Id,
+            user.Username,
+            user.ProfileImg
+        });
     }
 
     private static string GetInitials(string name)
@@ -319,6 +391,11 @@ public class ReactionRequestDto
 {
     public int NewsPostId { get; set; }
     public string ReactionType { get; set; } = string.Empty;
+}
+
+public class CommentLikeRequestDto
+{
+    public int CommentId { get; set; }
 }
 
 public class CommentRequestDto
